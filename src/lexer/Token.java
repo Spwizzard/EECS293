@@ -47,17 +47,36 @@ public final class Token {
 		private Token build(){
 			return new Token(type, data);
 		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			// TODO Auto-generated method stub
-			return super.equals(obj);
-		}
+
 		@Override
 		public int hashCode() {
-			// TODO Auto-generated method stub
-			return super.hashCode();
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((data == null) ? 0 : data.hashCode());
+			result = prime * result + ((type == null) ? 0 : type.hashCode());
+			return result;
 		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Builder other = (Builder) obj;
+			if (data == null) {
+				if (other.data != null)
+					return false;
+			} else if (!data.equals(other.data))
+				return false;
+			if (type != other.type)
+				return false;
+			return true;
+		}
+		
+		
 	}
 	
 	
@@ -85,7 +104,7 @@ public final class Token {
 			 builder = new Builder(type, Optional.ofNullable(data));
 		}
 		else{
-			builder = new Builder(type, Optional.empty());
+			builder = new Builder(type, Optional.<String>empty());
 		}
 		
 		//now check if that builder already exists in the map		
