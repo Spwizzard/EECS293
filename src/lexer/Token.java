@@ -7,22 +7,24 @@ import java.util.Optional;
 public final class Token {
 
 	public enum Type {
-		NOT 		("not", false),
-		AND 		("and", false),
-		OR			("or", false),
-		OPEN 		("\\(", false),
-		CLOSE 		("\\)", false),
-		ID 			("[a-z]+", true), //a string of lower case letters
-		NUMBER 		("-?\\d+", true), //a sequence of digits, with a possible - sign
-		BINARYOP 	("[\\+\\-\\*\\/]", true), //one of +,-,*, or /
-		WHITESPACE 	("\\s+", false); //a sequence of whitespace
-		
+		NOT 		("not", false, false),
+		AND 		("and", false, true),
+		OR			("or", false, true),
+		OPEN 		("\\(", false, false),
+		CLOSE 		("\\)", false, false),
+		ID 			("[a-z]+", true, false), //a string of lower case letters
+		NUMBER 		("-?\\d+", true, false), //a sequence of digits, with a possible - sign
+		BINARYOP 	("[\\+\\-\\*\\/]", true, false), //one of +,-,*, or /
+		WHITESPACE 	("\\s+", false, false); //a sequence of whitespace
+
 		private final String pattern;
 		private final Boolean hasData;
+		private final boolean isComplex;
 		
-		Type(String pattern, Boolean hasData){
+		Type(String pattern, Boolean hasData, Boolean isComplex){
 			this.pattern = pattern;
 			this.hasData = hasData;
+			this.isComplex = isComplex;
 		}
 
 		public String getPattern() {
@@ -31,6 +33,10 @@ public final class Token {
 
 		public Boolean getHasData() {
 			return hasData;
+		}
+		
+		public boolean isComplex() {
+			return isComplex;
 		}
 	}
 	
