@@ -14,12 +14,16 @@ public class LexerTest {
 	public void testNext(){
 		Lexer lex = new Lexer("and b");
 		try{
+			lex.hasNext();
 			LocationalToken token = lex.next();	
 			assertEquals(Token.of(Token.Type.AND, "") , token.getToken());
+			lex.hasNext();
 			token = lex.next();	
 			assertEquals(Token.of(Token.Type.WHITESPACE, "") , token.getToken());
+			lex.hasNext();
 			token = lex.next();	
 			assertEquals(Token.of(Token.Type.ID, "b") , token.getToken());
+			lex.hasNext();
 			token = lex.next();	
 		}
 		catch (ParserException pe){
@@ -47,21 +51,6 @@ public class LexerTest {
 		catch (ParserException pe){
 			assertEquals(ParserException.ErrorCode.INVALID_TOKEN, pe.getErrorCode());
 		}
-	}
-	
-	@Test
-	public void testMatchTokenTypeToType(){
-		Lexer lex = new Lexer("and or +");
-		lex.hasNext();	
-		assertEquals(Token.Type.AND, lex.matchTokenToType("and"));
-		
-		lex = new Lexer(" and or +");
-		lex.hasNext();	
-		assertEquals(Token.Type.WHITESPACE, lex.matchTokenToType(" "));
-		
-		lex = new Lexer("a and or +");
-		lex.hasNext();	
-		assertEquals(Token.Type.ID, lex.matchTokenToType("a"));
 	}
 	
 	@Test

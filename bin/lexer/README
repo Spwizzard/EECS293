@@ -1,5 +1,5 @@
 Author: Steven Leonis
 
-The "lexer" folder contains source code for EECS293 Programming Assignment #2.
+The "lexer" folder contains source code for EECS293 Programming Assignment #2-5.
 
-There is currently no main method, so there isn't really a point to compiling and running this code...I'm not sure how that would even work.
+Code should be compiled using Java 1.8 library

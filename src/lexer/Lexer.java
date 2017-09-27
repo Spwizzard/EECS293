@@ -9,15 +9,7 @@ import lexer.ParserException.ErrorCode;
 
 public class Lexer {
 	
-	private static Pattern tokenPatterns = Pattern.compile(	"(" + Token.Type.NOT.getPattern() + ")|(" +
-																Token.Type.AND.getPattern() + ")|(" +
-																Token.Type.OR.getPattern() + ")|(" +
-																Token.Type.OPEN.getPattern() + ")|(" +
-																Token.Type.CLOSE.getPattern() + ")|(" +
-																Token.Type.ID.getPattern() + ")|(" +
-																Token.Type.NUMBER.getPattern() + ")|(" +
-																Token.Type.BINARYOP.getPattern() + ")|(" +
-																Token.Type.WHITESPACE.getPattern() + ")");
+	private static Pattern tokenPatterns = Pattern.compile(makeTokenPattern());	
 	private final Matcher matcher;
 	
 	public Lexer(String input){
@@ -29,12 +21,14 @@ public class Lexer {
 	}
 	
 	public LocationalToken next() throws ParserException{
-		if(!hasNext()){
-			//if there is no next token to be found in the input, throw an error
-			throw new ParserException(ErrorCode.TOKEN_EXPECTED);
+		//get the next token with group()
+		String tokenString;
+		try{
+			tokenString = matcher.group();
 		}
-		//there is a next token, get it with group()
-		String tokenString = matcher.group();
+		catch (IllegalStateException e){
+			throw new ParserException(ParserException.ErrorCode.TOKEN_EXPECTED);
+		}
 		Token.Type tokenType = matchTokenToType(tokenString);
 		Token token = Token.of(tokenType, tokenString);
 		return new LocationalToken(token, matcher.start());
@@ -44,41 +38,45 @@ public class Lexer {
 												Set<Token.Type> invalidTypes) 
 														throws ParserException{
 		LocationalToken nextToken;
-		try{
-			 nextToken = next();
+		while(hasNext()){
+			nextToken = next();
+			
+			if(invalidTypes.contains(nextToken.getTokenType())){
+				//this token Type is invalid! Throw an error
+				throw new ParserException(nextToken, ErrorCode.INVALID_TOKEN);
+			}
+			else if(validTypes.contains(nextToken.getTokenType())){
+				//the token Type is valid, return it
+				return Optional.of(nextToken);
+			}
 		}
-		catch (ParserException pe){
-			//this will be a TOKEN_EXPECTED error, which is what we want to handle
-			return Optional.empty();
-		}
-		
-		if(invalidTypes.contains(nextToken.getTokenType())){
-			//this token Type is invalid! Throw an error
-			throw new ParserException(nextToken, ErrorCode.INVALID_TOKEN);
-		}
-		else if(validTypes.contains(nextToken.getTokenType())){
-			//the token Type is valid, return it
-			return Optional.of(nextToken);
-		}
-		else{
-			//the token is ignored, move on to the next one
-			return nextValid(validTypes, invalidTypes);
-		}
+		//we ran out of tokens
+		return Optional.<LocationalToken>empty();
 	}
 	
-	public Token.Type matchTokenToType(String tokenString){
+	private Token.Type matchTokenToType(String tokenString) throws ParserException{
 		Token.Type[] tokenValues = Token.Type.values();
-		for (int i = 0; i < tokenValues.length; i++){
+		for (Token.Type tokenType : tokenValues){
 			//loop through each group to find the correct token type
-			//the groups are offset from the enum types by 1
-			String match = matcher.group(i + 1);
+			String match = matcher.group(tokenType.name());
 			if(match != null && match.equals(tokenString)){
 				//we found it!
-				return tokenValues[i];
+				return tokenType;
 			}
 		}
 		//we didn't find it somehow
 		System.out.println("didn't match token to type!");
-		return null;
+		throw new ParserException(ParserException.ErrorCode.TOKEN_EXPECTED);
+	}
+	
+	private static String makeTokenPattern(){
+		Token.Type[] tokenTypes = Token.Type.values();
+		StringBuilder patternBuilder = new StringBuilder();
+		for (Token.Type tokenType : tokenTypes){
+			patternBuilder.append("(?<" + tokenType.name() + ">" + tokenType.getPattern() + ")|");
+		}
+		//delete the last '|'
+		patternBuilder.deleteCharAt(patternBuilder.length() - 1);
+		return patternBuilder.toString();
 	}
 }
