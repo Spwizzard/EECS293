@@ -7,24 +7,26 @@ import java.util.Optional;
 public final class Token {
 
 	public enum Type {
-		NOT 		("not", false, false),
-		AND 		("and", false, true),
-		OR			("or", false, true),
-		OPEN 		("\\(", false, false),
-		CLOSE 		("\\)", false, false),
-		ID 			("[a-z]+", true, false), //a string of lower case letters
-		NUMBER 		("-?\\d+", true, false), //a sequence of digits, with a possible - sign
-		BINARYOP 	("[\\+\\-\\*\\/]", true, false), //one of +,-,*, or /
-		WHITESPACE 	("\\s+", false, false); //a sequence of whitespace
+		NOT 		("not", false, false, Optional.<ParserException.ErrorCode>empty()),
+		AND 		("and", false, true, Optional.of(ParserException.ErrorCode.AND_EXPECTED)),
+		OR			("or", 	false, true, Optional.<ParserException.ErrorCode>empty()),
+		OPEN 		("\\(", false, false, Optional.of(ParserException.ErrorCode.OPEN_EXPECTED)),
+		CLOSE 		("\\)", false, false, Optional.of(ParserException.ErrorCode.CLOSE_EXPECTED)),
+		ID 			("[a-z]+", true, false, Optional.of(ParserException.ErrorCode.ID_EXPECTED)), //a string of lower case letters
+		NUMBER 		("-?\\d+", true, false, Optional.<ParserException.ErrorCode>empty()), //a sequence of digits, with a possible - sign
+		BINARYOP 	("[\\+\\-\\*\\/]", true, false, Optional.<ParserException.ErrorCode>empty()), //one of +,-,*, or /
+		WHITESPACE 	("\\s+", false, false, Optional.<ParserException.ErrorCode>empty()); //a sequence of whitespace
 
 		private final String pattern;
 		private final Boolean hasData;
 		private final boolean isComplex;
+		private final Optional<ParserException.ErrorCode> errorCode;
 		
-		Type(String pattern, Boolean hasData, Boolean isComplex){
+		Type(String pattern, Boolean hasData, Boolean isComplex, Optional<ParserException.ErrorCode> errorCode){
 			this.pattern = pattern;
 			this.hasData = hasData;
 			this.isComplex = isComplex;
+			this.errorCode = errorCode;
 		}
 
 		public String getPattern() {
@@ -37,6 +39,10 @@ public final class Token {
 		
 		public boolean isComplex() {
 			return isComplex;
+		}
+		
+		public Optional<ParserException.ErrorCode> getErrorCode() {
+			return errorCode;
 		}
 	}
 	
