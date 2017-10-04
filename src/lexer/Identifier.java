@@ -16,7 +16,7 @@ public final class Identifier implements Factor{
 		}
 		
 	}
-	
+
 	private final String id;
 	
 	private Identifier(String id){
@@ -26,5 +26,10 @@ public final class Identifier implements Factor{
 	@Override
 	public String toString() {
 		return id;
+	}
+
+	@Override
+	public ConjunctiveRepresentation conjunctiveRepresentation() {
+		return new ConjunctiveRepresentation(id, false);
 	}
 }

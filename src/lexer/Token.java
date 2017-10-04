@@ -59,7 +59,7 @@ public final class Token {
 		private Token build(){
 			return new Token(type, data);
 		}
-
+		
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -87,6 +87,7 @@ public final class Token {
 				return false;
 			return true;
 		}
+		
 	}
 	
 	private final Type type;
