@@ -1,0 +1,89 @@
+// Steven Leonis
+// Pseudocode for HW6
+
+estimatedDurationOfAssignments(S assignments)
+	blocked <- S
+	started <- empty set
+	finished <- empty set
+	totalDuration <- 0
+	while isFinished(blocked, started) is false
+		startEligibleAssignments(blocked, started, finished)
+		verifyIsNotStuck(blocked, started)
+		endEligibleAssignments(blocked, started, finished)
+		decrementCurrentDuration(started)
+		increment totalDuration
+	return totalDuration
+
+
+isFinished(blocked, started)
+	if started is empty and blocked is empty
+		return true because we've completed all of the tasks
+	else
+		return false because there are still tasks
+
+verifyIsNotStuck(blocked, started)
+	if started is empty and blocked is not empty
+		throw a circular requirement error because we can't start any of the blocked tasks but we've completed 		all of the tasks that we can
+
+decrementCurrentDuration(started)
+	for each assignment in started
+		if currentDuration(assignment) > 0
+			currentDuration(assignment) <- currentDuration(assignment) - 1
+
+
+
+startEligibleAssignments(blocked, started, finished)
+	for each assignment in blocked
+		if the assignment canStart(assignment, blocked, started, finished)
+			remove assignment from blocked
+			add assignment to started
+
+endEligibleAssignments(blocked, started, finished)
+	for each assignment in started
+		if the assignment canFinish(assignment, blocked, started, finished)
+			remove assignment from started
+			add assignment to finished
+
+
+
+canStart(assignment, blocked, started, finished)
+	if not endBeginDependenciesReady(assignment, blocked, started, finished)
+		return false
+	else if not beginBeginDependenciesReady(assignment, blocked, started, finished)
+		return false
+	return true
+
+endBeginDependenciesReady(assignment, blocked, started, finished)
+	for each dependency in END_BEGIN(assignment)
+		if dependency is not in finished and not canFinish(dependency, blocked, started, finished)
+			return false
+	return true
+
+beginBeginDependenciesReady(assignment, blocked, started, finished)
+	for each dependency in BEGIN_BEGIN(assignment)
+		if dependency is in blocked and not canStart(dependency, blocked, started, finished)
+			return false
+	return true
+
+
+
+canFinish(assignment, blocked, started, finished)
+	if currentDuration(assignment) > 0
+		return false
+	else if not beginEndDependenciesReady(assignment, blocked, started, finished)
+		return false
+	else if not endEndDependenciesReady(assignment, blocked, started, finished)
+		return false
+	return true
+
+beginEndDependenciesReady(assignment, blocked, started, finished)
+	for each dependency in BEGIN_END(assignment)
+		if dependency is in blocked and not canStart(dependency, blocked, started, finished)
+			return false
+	return true
+
+endEndDependenciesReady(assignment, blocked, started, finished)
+	for each dependency in END_END(assignment)
+		if dependency is not in finished and not canFinish(dependency, blocked, started, finished)
+			return false
+	return true

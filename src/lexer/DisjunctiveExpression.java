@@ -24,16 +24,11 @@ public final class DisjunctiveExpression {
 				Factor factor = Identifier.Builder.build(token);
 				return new DisjunctiveExpression(factor, pos);
 			}
-			else if(token.getTokenType() == Token.Type.OPEN){
+			//else we can assume it is an OPEN and let compound factor handle if its not
+			else{
 				Factor factor = CompoundFactor.Builder.build(token, lexer);
 				return new DisjunctiveExpression(factor, pos);
 			}
-			else {
-				//the next token wasn't an ID or an OPEN
-				throw new ParserException(token, ParserException.ErrorCode.ID_EXPECTED);
-			}
-			
-			
 		}
 	}
 	
@@ -47,12 +42,22 @@ public final class DisjunctiveExpression {
 		
 	}
 	
+	public final String conjunctiveRepresentation(){
+		ConjunctiveRepresentation conjRep = factor.conjunctiveRepresentation();
+		if(conjRep.isNegation() == positive){
+			//the conjunctiveRepresentation and disjunctiveExpression are different
+			return "not " + conjRep.getRepresentation(); 
+		}
+		//the conjunctiveRepresentation and disjunctiveExpression agree
+		return conjRep.getRepresentation();
+	}
+	
 	@Override
-	public String toString() {
+	public String toString() { 
 		if(positive){
 			return factor.toString();
 		}
-		return "not " + factor.toString();
+		return "not " + factor;
 	}
 	
 }

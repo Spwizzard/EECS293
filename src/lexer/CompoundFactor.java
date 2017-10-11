@@ -37,4 +37,10 @@ public class CompoundFactor implements Factor{
 	public String toString() {
 		return "(" + leftExpression + " and " + rightExpression + ")";
 	}
+
+	@Override
+	public ConjunctiveRepresentation conjunctiveRepresentation() {
+		String negation = "(" + leftExpression.negate().conjunctiveRepresentation() + " or " + rightExpression.negate().conjunctiveRepresentation() + ")";
+		return new ConjunctiveRepresentation(negation, true);
+	}
 }
