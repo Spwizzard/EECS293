@@ -18,6 +18,7 @@ public class Assignment {
 
 	public Assignment(int estimatedDuration){
 		this.estimatedDuration = estimatedDuration;
+		this.currentDuration = estimatedDuration;
 		dependencyMap.put(DependencyType.BEGIN_BEGIN, new HashSet<Assignment>());
 		dependencyMap.put(DependencyType.END_BEGIN, new HashSet<Assignment>());
 		dependencyMap.put(DependencyType.BEGIN_END, new HashSet<Assignment>());

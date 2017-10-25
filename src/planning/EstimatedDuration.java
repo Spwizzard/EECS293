@@ -26,12 +26,7 @@ public class EstimatedDuration {
 	}
 	
 	private static boolean isFinished(){
-		if (started.isEmpty() && blocked.isEmpty()){
-			return true; //all tasks are in finished
-		}
-		else{
-			return false;
-		}	
+		return (started.isEmpty() && blocked.isEmpty());
 	}
 	
 	private static void decrementCurrentDuration(HashSet<Assignment> assignments){
@@ -44,63 +39,63 @@ public class EstimatedDuration {
 	}
 	
 	private static void startEligibleAssignments(){
-		Iterator<Assignment> blockedIterator = blocked.iterator();
-		while(blockedIterator.hasNext()){
-			Assignment assignment = blockedIterator.next();
-			if(canStart(assignment)){
-				blockedIterator.remove();
-				started.add(assignment);
-				assignment.setCurrentDuration(assignment.getEstimatedDuration());
-			}
-		}
+		handleEligibleAssignments(blocked, started, true);
 	}
 	
 	private static void endEligibleAssignments(){
-		Iterator<Assignment> startedIterator = started.iterator();
-		while(startedIterator.hasNext()){
-			Assignment assignment = startedIterator.next();
-			if(canFinish(assignment)){
-				startedIterator.remove();
-				finished.add(assignment);
+		handleEligibleAssignments(started, finished, false);
+	}
+	
+	private static void handleEligibleAssignments(	HashSet<Assignment> initialSet,
+													HashSet<Assignment> moveToSet,
+													Boolean start){
+		Iterator<Assignment> initialIterator = initialSet.iterator();
+		while(initialIterator.hasNext()){
+			Assignment assignment = initialIterator.next();
+			if(start && canStart(assignment)){
+				initialIterator.remove();
+				moveToSet.add(assignment);
+			}
+			else if(canFinish(assignment)){
+				initialIterator.remove();
+				moveToSet.add(assignment);
 			}
 		}
 	}
 	
 	private static boolean canStart(Assignment assignment){
-		if(!canDependenciesEnd(assignment, Assignment.DependencyType.END_BEGIN)){
-			return false;
-		}
-		else if(!canDependenciesBegin(assignment, Assignment.DependencyType.BEGIN_BEGIN)){
-			return false;
-		}
-		return true;
+		return isAssignmentEligible(assignment, 
+				Assignment.DependencyType.BEGIN_BEGIN, 
+				Assignment.DependencyType.END_BEGIN);
 	}
 	
 	private static boolean canFinish(Assignment assignment){
 		if(assignment.getCurrentDuration() > 0){
 			return false;
 		}
-		else if(!canDependenciesBegin(assignment, Assignment.DependencyType.BEGIN_END)){
-			return false;
-		}
-		else if(!canDependenciesEnd(assignment, Assignment.DependencyType.END_END)){
-			return false;
-		}
-		return true;
+		return isAssignmentEligible(assignment, 
+									Assignment.DependencyType.BEGIN_END, 
+									Assignment.DependencyType.END_END);
 	}
 	
-	private static boolean canDependenciesBegin(Assignment assignment, Assignment.DependencyType type){
+	private static boolean isAssignmentEligible(Assignment assignment, 
+												Assignment.DependencyType beginType, 
+												Assignment.DependencyType endType){
+		return (canDependenciesResolve(assignment, beginType, true) &&
+				(canDependenciesResolve(assignment, endType, false)));
+	}
+	
+	private static boolean canDependenciesResolve(	Assignment assignment, 
+													Assignment.DependencyType type,
+													Boolean beginType){
 		for(Assignment dependency : assignment.getDependencySetOfType(type)){
-			if(blocked.contains(dependency)){ //&& !canStart(dependency)
-				return false;
+			if(beginType){
+				if(blocked.contains(dependency)){ 
+					return false;//&& !canStart(dependency)
+				}
+				continue;
 			}
-		}
-		return true;
-	}
-	
-	private static boolean canDependenciesEnd(Assignment assignment, Assignment.DependencyType type){
-		for(Assignment dependency : assignment.getDependencySetOfType(type)){
-			if(!finished.contains(dependency)){ // && !canFinish(dependency)
+			else if(!finished.contains(dependency)){ // && !canFinish(dependency)
 				return false;
 			}
 		}
