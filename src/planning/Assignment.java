@@ -25,8 +25,6 @@ public class Assignment {
 		dependencyMap.put(DependencyType.END_END, new HashSet<Assignment>());
 	}
 
-	
-	
 	/**
 	 * @return the estimatedDuration
 	 */

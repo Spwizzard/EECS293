@@ -6,39 +6,70 @@ import java.util.Iterator;
 
 public class EstimatedDuration {
 	
-	public class EstimatedDurationTest{
+	public class Test{
 		
-		public boolean isFinished(){
-			
+		public boolean isFinished(HashSet<Assignment> blocked, HashSet<Assignment> started){
+			EstimatedDuration.blocked = blocked;
+			EstimatedDuration.started = started;
+			return EstimatedDuration.isFinished();
 		}
 		
 		public void decrementCurrentDuration(HashSet<Assignment> assignments){
-			
+			EstimatedDuration.decrementCurrentDuration(assignments);
 		}
 
-		public void handleEligibleAssignments(	HashSet<Assignment> initialSet,
+		public void handleEligibleAssignments(	HashSet<Assignment> blocked,
+												HashSet<Assignment> started,
+												HashSet<Assignment> finished,
+												HashSet<Assignment> initialSet,
 												HashSet<Assignment> moveToSet,
 												Boolean start){
-			
+			setupEstimatedDurationStateHelper(blocked, started, finished);
+			EstimatedDuration.handleEligibleAssignments(initialSet, moveToSet, start);
 		}
 		
-		public boolean canStart(Assignment assignment){
-			
+		public boolean canStart(HashSet<Assignment> blocked,
+								HashSet<Assignment> started,
+								HashSet<Assignment> finished,
+								Assignment assignment){
+			setupEstimatedDurationStateHelper(blocked, started, finished);
+			return EstimatedDuration.canStart(assignment);
 		}
 		
-		public boolean canFinish(Assignment assignment){
-			
+		public boolean canFinish(	HashSet<Assignment> blocked,
+									HashSet<Assignment> started,
+									HashSet<Assignment> finished,
+									Assignment assignment){
+			setupEstimatedDurationStateHelper(blocked, started, finished);
+			return EstimatedDuration.canFinish(assignment);
 		}
 		
-		public boolean isAssignmentEligible(Assignment assignment, 
+		public boolean isAssignmentEligible(HashSet<Assignment> blocked,
+											HashSet<Assignment> started,
+											HashSet<Assignment> finished,
+											Assignment assignment, 
 											Assignment.DependencyType beginType, 
 											Assignment.DependencyType endType){
-			
+			setupEstimatedDurationStateHelper(blocked, started, finished);
+			return EstimatedDuration.isAssignmentEligible(assignment, beginType, endType);
 		}
 		
-		public boolean canDependenciesResolve(	Assignment assignment, 
+		public boolean canDependenciesResolve(	HashSet<Assignment> blocked,
+												HashSet<Assignment> started,
+												HashSet<Assignment> finished,
+												Assignment assignment, 
 												Assignment.DependencyType type,
 												Boolean begin){
+			setupEstimatedDurationStateHelper(blocked, started, finished);
+			return EstimatedDuration.canDependenciesResolve(assignment, type, begin);
+		}
+		
+		private void setupEstimatedDurationStateHelper(	HashSet<Assignment> blocked,
+														HashSet<Assignment> started,
+														HashSet<Assignment> finished){
+			EstimatedDuration.blocked = blocked;
+			EstimatedDuration.started = started;
+			EstimatedDuration.finished = finished;
 		}
 	}
 	

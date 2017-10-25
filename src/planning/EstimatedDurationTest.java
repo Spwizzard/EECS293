@@ -4,11 +4,24 @@ import static org.junit.Assert.*;
 
 import java.util.HashSet;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import planning.Assignment.DependencyType;
 
 public class EstimatedDurationTest {
+	private HashSet<Assignment> blocked;
+	private HashSet<Assignment> started;
+	private HashSet<Assignment> finished;
+	private EstimatedDuration.Test test;
+	
+	
+	@Before
+	public void setUp() {
+		blocked = new HashSet<Assignment>();
+		started = new HashSet<Assignment>();
+		finished = new HashSet<Assignment>();
+	}
 	
 	@Test
 	public void testNoDependencies() throws CircularRequirementException{
@@ -22,7 +35,7 @@ public class EstimatedDurationTest {
 		assignments.add(c);
 		assignments.add(d);
 		int estimatedDuration = EstimatedDuration.estimatedDurationOfAssignments(assignments);
-		assertEquals(11, estimatedDuration); //should be 10 but algorithm is wrong
+		assertEquals(10, estimatedDuration); //algorithm wrongly says 11
 	}
 	
 	@Test
@@ -41,7 +54,7 @@ public class EstimatedDurationTest {
 		assignments.add(c);
 		assignments.add(d);
 		int estimatedDuration = EstimatedDuration.estimatedDurationOfAssignments(assignments);
-		assertEquals(18, estimatedDuration); //should be 16 but algorithm is wrong
+		assertEquals(16, estimatedDuration); //algorithm wrongly says 18
 	}
 	
 	@Test
@@ -60,7 +73,7 @@ public class EstimatedDurationTest {
 		assignments.add(c);
 		assignments.add(d);
 		int estimatedDuration = EstimatedDuration.estimatedDurationOfAssignments(assignments);
-		assertEquals(11, estimatedDuration); //should be 10 but algorithm is wrong
+		assertEquals(10, estimatedDuration); //algorithm wrongly says 11
 	}
 	
 	@Test
@@ -79,7 +92,7 @@ public class EstimatedDurationTest {
 		assignments.add(c);
 		assignments.add(d);
 		int estimatedDuration = EstimatedDuration.estimatedDurationOfAssignments(assignments);
-		assertEquals(24, estimatedDuration); //should be 21 but algorithm is wrong
+		assertEquals(21, estimatedDuration); //algorithm wrongly says 24
 	}
 	
 	@Test
@@ -114,14 +127,14 @@ public class EstimatedDurationTest {
 		assignments.add(b);
 		try{
 			int estimatedDuration = EstimatedDuration.estimatedDurationOfAssignments(assignments);
-			System.out.println(estimatedDuration);
-			fail(); //This should have broken the algorithm
+			System.out.println(estimatedDuration); //This should have been fine
 		}
 		catch (CircularRequirementException e){
-			//this algorithm breaks easily
-			//pass the test
+			fail();
 		}
 		
 	}
+	
+	@Test
 	
 }
