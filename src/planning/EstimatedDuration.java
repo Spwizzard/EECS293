@@ -3,7 +3,44 @@ package planning;
 import java.util.HashSet;
 import java.util.Iterator;
 
+
 public class EstimatedDuration {
+	
+	public class EstimatedDurationTest{
+		
+		public boolean isFinished(){
+			
+		}
+		
+		public void decrementCurrentDuration(HashSet<Assignment> assignments){
+			
+		}
+
+		public void handleEligibleAssignments(	HashSet<Assignment> initialSet,
+												HashSet<Assignment> moveToSet,
+												Boolean start){
+			
+		}
+		
+		public boolean canStart(Assignment assignment){
+			
+		}
+		
+		public boolean canFinish(Assignment assignment){
+			
+		}
+		
+		public boolean isAssignmentEligible(Assignment assignment, 
+											Assignment.DependencyType beginType, 
+											Assignment.DependencyType endType){
+			
+		}
+		
+		public boolean canDependenciesResolve(	Assignment assignment, 
+												Assignment.DependencyType type,
+												Boolean begin){
+		}
+	}
 	
 	private static HashSet<Assignment> blocked;
 	private static HashSet<Assignment> started;
@@ -16,9 +53,9 @@ public class EstimatedDuration {
 		blocked.addAll(assignments);		
 		int totalDuration = 0;
 		while(!isFinished()){
-			startEligibleAssignments();
+			handleEligibleAssignments(blocked, started, true);
 			CircularRequirementException.verifyIsNotStuck(blocked, started);
-			endEligibleAssignments();
+			handleEligibleAssignments(started, finished, false);
 			decrementCurrentDuration(started);
 			totalDuration++;
 		}
@@ -38,27 +75,23 @@ public class EstimatedDuration {
 		}
 	}
 	
-	private static void startEligibleAssignments(){
-		handleEligibleAssignments(blocked, started, true);
-	}
-	
-	private static void endEligibleAssignments(){
-		handleEligibleAssignments(started, finished, false);
-	}
-	
 	private static void handleEligibleAssignments(	HashSet<Assignment> initialSet,
 													HashSet<Assignment> moveToSet,
 													Boolean start){
 		Iterator<Assignment> initialIterator = initialSet.iterator();
 		while(initialIterator.hasNext()){
 			Assignment assignment = initialIterator.next();
-			if(start && canStart(assignment)){
-				initialIterator.remove();
-				moveToSet.add(assignment);
+			if(start){
+				if(canStart(assignment)){
+					initialIterator.remove();
+					moveToSet.add(assignment);
+				}
 			}
-			else if(canFinish(assignment)){
-				initialIterator.remove();
-				moveToSet.add(assignment);
+			else{
+				if(canFinish(assignment)){
+					initialIterator.remove();
+					moveToSet.add(assignment);
+				}
 			}
 		}
 	}
@@ -84,19 +117,20 @@ public class EstimatedDuration {
 		return (canDependenciesResolve(assignment, beginType, true) &&
 				(canDependenciesResolve(assignment, endType, false)));
 	}
-	
-	private static boolean canDependenciesResolve(	Assignment assignment, 
+
+	private static boolean canDependenciesResolve(	Assignment assignment,
 													Assignment.DependencyType type,
-													Boolean beginType){
+													Boolean begin){
 		for(Assignment dependency : assignment.getDependencySetOfType(type)){
-			if(beginType){
-				if(blocked.contains(dependency)){ 
-					return false;//&& !canStart(dependency)
+			if(begin){
+				if(blocked.contains(dependency)){ //&& !canStart(dependency)
+					return false;
 				}
-				continue;
 			}
-			else if(!finished.contains(dependency)){ // && !canFinish(dependency)
-				return false;
+			else{
+				if(!finished.contains(dependency)){ //&& !canStart(dependency)
+					return false;
+				}
 			}
 		}
 		return true;

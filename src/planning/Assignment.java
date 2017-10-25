@@ -25,15 +25,26 @@ public class Assignment {
 		dependencyMap.put(DependencyType.END_END, new HashSet<Assignment>());
 	}
 
-	public int getEstimatedDuration(){
+	
+	
+	/**
+	 * @return the estimatedDuration
+	 */
+	public int getEstimatedDuration() {
 		return estimatedDuration;
-	} 
+	}
 
-	public int getCurrentDuration(){
+	/**
+	 * @return the currentDuration
+	 */
+	public int getCurrentDuration() {
 		return currentDuration;
 	}
 	
-	public void setCurrentDuration(int currentDuration){
+	/**
+	 * @param currentDuration the currentDuration to set
+	 */
+	public void setCurrentDuration(int currentDuration) {
 		this.currentDuration = currentDuration;
 	}
 
