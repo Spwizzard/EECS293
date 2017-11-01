@@ -133,8 +133,5 @@ public class EstimatedDurationTest {
 			fail();
 		}
 		
-	}
-	
-	@Test
-	
+	}	
 }
