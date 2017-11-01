@@ -1,0 +1,702 @@
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..ccd34d3
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,7 @@
++.classpath
++.project
++.settings/
++build/
++report/
++bin/
++log/
+diff --git a/inputs/CompletelyOverlappingComposite.txt b/inputs/CompletelyOverlappingComposite.txt
+new file mode 100644
+index 0000000..56fc2e2
+--- /dev/null
++++ b/inputs/CompletelyOverlappingComposite.txt
+@@ -0,0 +1,16 @@
++4
++4
++. . . .
++. A A .
++. A A .
++. . . .
++
++. . . B
++. B B .
++. B B .
++. . . B
++
++. . . B
++. B B .
++. B B .
++. . . B
+\ No newline at end of file
+diff --git a/inputs/ImpossibleCompositePicture.txt b/inputs/ImpossibleCompositePicture.txt
+new file mode 100644
+index 0000000..719a67a
+--- /dev/null
++++ b/inputs/ImpossibleCompositePicture.txt
+@@ -0,0 +1,16 @@
++4
++4
++. . . .
++. A A .
++. A A .
++. . . .
++
++. . . B
++. B B .
++. B B .
++. . . B
++
++. . . B
++. A A .
++. A B .
++. . . B
+\ No newline at end of file
+diff --git a/inputs/ImpossibleCompositePicture2.txt b/inputs/ImpossibleCompositePicture2.txt
+new file mode 100644
+index 0000000..0539e5a
+--- /dev/null
++++ b/inputs/ImpossibleCompositePicture2.txt
+@@ -0,0 +1,16 @@
++4
++4
++. . . .
++. A A .
++. A A .
++. . . .
++
++. . . B
++. . . .
++. . . .
++. . . B
++
++. . . B
++. A A .
++. A A .
++. . . B
+\ No newline at end of file
+diff --git a/inputs/InvalidCompositePicturePlacement.txt b/inputs/InvalidCompositePicturePlacement.txt
+new file mode 100644
+index 0000000..8004f05
+--- /dev/null
++++ b/inputs/InvalidCompositePicturePlacement.txt
+@@ -0,0 +1,16 @@
++4
++4
++. . . .
++. A A .
++. A A .
++. . . .
++
++. . . B
++. . B .
++. . B .
++. . . B
++
++. . . .
++. A B .
++. A B .
++. . . B
+\ No newline at end of file
+diff --git a/inputs/PictureOrderingOrderStringInput.txt b/inputs/PictureOrderingOrderStringInput.txt
+new file mode 100644
+index 0000000..633b29d
+--- /dev/null
++++ b/inputs/PictureOrderingOrderStringInput.txt
+@@ -0,0 +1,61 @@
++9
++8
++. . . . . . . .
++E E E E E E . .
++E . . . . E . .
++E . . . . E . .
++E . . . . E . .
++E . . . . E . .
++E . . . . E . .
++E . . . . E . .
++E E E E E E . .
++
++. . . . . . . .
++. . . . . . . .
++D D D D D D . .
++D . . . . D . .
++D . . . . D . .
++D . . . . D . .
++D D D D D D . .
++. . . . . . . .
++. . . . . . . .
++
++. . . . . . . .
++. . . . . . . .
++. . . . . . . .
++. . . . . . . .
++. . . . A A A A
++. . . . A . . A
++. . . . A . . A
++. . . . A A A A
++. . . . . . . .
++
++. . . . . . . .
++. . B B B B . .
++. . B . . B . .
++. . B . . B . .
++. . B . . B . .
++. . B B B B . .
++. . . . . . . .
++. . . . . . . .
++. . . . . . . .
++
++. C C C . . . .
++. C . C . . . .
++. C . C . . . .
++. C C C . . . .
++. . . . . . . .
++. . . . . . . .
++. . . . . . . .
++. . . . . . . .
++. . . . . . . .
++
++. C C C . . . .
++E C B C B B . .
++D C B C D B . .
++D C C C . B . .
++D . B . A B A A
++D . B B B B . A
++D D D D A D . A
++E . . . A A A A
++E E E E E E . .
+\ No newline at end of file
+diff --git a/inputs/input.txt b/inputs/input.txt
+new file mode 100644
+index 0000000..0539e5a
+--- /dev/null
++++ b/inputs/input.txt
+@@ -0,0 +1,16 @@
++4
++4
++. . . .
++. A A .
++. A A .
++. . . .
++
++. . . B
++. . . .
++. . . .
++. . . B
++
++. . . B
++. A A .
++. A A .
++. . . B
+\ No newline at end of file
+diff --git a/src/pic/AbstractPicture.java b/src/pic/AbstractPicture.java
+index 28c0bd9..370b3f1 100644
+--- a/src/pic/AbstractPicture.java
++++ b/src/pic/AbstractPicture.java
+@@ -80,12 +80,12 @@ abstract class AbstractPicture implements Iterable<Character> {
+      * @param removedCharacters the List of characters already removed
+      * @return true if subPicture is still obstructed in this composite picture
+      */
+-    boolean isSubPictureObstructed(final SubPicture subPicture, Set<Character> removedCharacters) {
++    boolean isSubPictureObstructed(final SubPicture subPicture, List<Character> removedCharacters) {
+ 
+         assert subPicture != null : "Enforced by factory";
+ 
+         // If list of removed characters is null, make it a blank list
+-        removedCharacters = Common.nonNullSet(removedCharacters);
++        removedCharacters = Common.nonNullList(removedCharacters);
+ 
+         Iterator<Character> myChars = iterator();
+         Iterator<Character> subPictureChars = subPicture.iterator();
+@@ -119,7 +119,7 @@ abstract class AbstractPicture implements Iterable<Character> {
+                 checkOff.remove(c);
+             }
+         }
+-        return true;
++        return checkOff.isEmpty();
+     }
+ 
+ 
+@@ -142,7 +142,7 @@ abstract class AbstractPicture implements Iterable<Character> {
+ 
+         boolean isNull = (character == null);
+         boolean isContained = (containingSet.contains(character));
+-        return !isNull || !isContained;
++        return !isNull && !isContained;
+     }
+ 
+ 
+@@ -159,9 +159,9 @@ abstract class AbstractPicture implements Iterable<Character> {
+      */
+     private static boolean characterObstructs(final Character hiddenCharacterCandidate,
+                                               final Character surfaceCharacter,
+-                                              Set<Character> removedCharacters) {
++                                              List<Character> removedCharacters) {
+ 
+-        removedCharacters = Common.nonNullSet(removedCharacters);
++        removedCharacters = Common.nonNullList(removedCharacters);
+ 
+         // null characters can't be obstructed
+         if(hiddenCharacterCandidate == null || surfaceCharacter == null){
+@@ -221,7 +221,7 @@ abstract class AbstractPicture implements Iterable<Character> {
+ 
+         static boolean characterObstructs(Character targetCharacter,
+                                           Character obstructingCharacter,
+-                                          Set<Character> nonObstructingCharacters) {
++                                          List<Character> nonObstructingCharacters) {
+             return AbstractPicture.characterObstructs(targetCharacter, obstructingCharacter, nonObstructingCharacters);
+         }
+     }
+diff --git a/src/pic/CharacterImage.java b/src/pic/CharacterImage.java
+index 96014e5..aa7b5a9 100644
+--- a/src/pic/CharacterImage.java
++++ b/src/pic/CharacterImage.java
+@@ -77,6 +77,13 @@ class CharacterImage implements Iterable<Character>{
+ 
+         return characters[row][col];
+     }
++    /*
++    Character findCharacter(){
++        Stream<Character> stream = stream().filter(c -> c != null && isValidCharacter(c));
++        System.out.println(stream.toArray());
++        return 'c';
++        //return stream.findAny().orElse(null);
++    }*/
+ 
+     Character findCharacter(){
+         return stream()
+@@ -84,7 +91,6 @@ class CharacterImage implements Iterable<Character>{
+                 .findAny()
+                 .orElse(null);
+     }
+-
+     // Iterable
+ 
+     private Stream<Character> stream() {
+diff --git a/src/pic/Chunk.java b/src/pic/Chunk.java
+index 0fcc154..4d56385 100644
+--- a/src/pic/Chunk.java
++++ b/src/pic/Chunk.java
+@@ -67,7 +67,7 @@ class Chunk {
+ 
+         Character[][] characters = new Character[height][width];
+ 
+-        List<String> linesWithoutWhitespace = noWhitespace();
++        List<String> linesWithoutWhitespace = noWhitespace(width);
+ 
+         validateList(linesWithoutWhitespace, height, width);
+ 
+@@ -105,19 +105,31 @@ class Chunk {
+         assert character != null : "Instantiated above";
+ 
+         if (character.equals('.')) {
+-            characters[charIdx][lineIdx] = null;
++            characters[lineIdx][charIdx] = null;
+         } else {
+-            characters[charIdx][lineIdx] = character;
++            characters[lineIdx][charIdx] = character;
+         }
+     }
+ 
+-    private List<String> noWhitespace() {
++    private List<String> noWhitespace(final int width) throws PictureException{
+ 
+         List<String> withoutWhitespace = new ArrayList<>();
+ 
+-        for (String str : lines)
+-            withoutWhitespace.add(str.replaceAll("\\s+", ""));
+-
++        for (String str : lines){
++        	/*We want to enforce that there is ONLY 1 space between each character
++        	For a line of length n, there should be floor(n / 2) spaces
++        	Ex. line has width 7, so length is 13, so 6 spaces
++        	We will replace exactly width - 1 spaces, then make sure they are all gone
++        	If not, there was the incorrect number of spaces*/
++        	validateLineLength(str, width *2 - 1);
++        	String newString = str;
++        	for(int i = 0; i < width - 1 ; i++){
++        		newString = newString.replaceFirst(" ", "");
++        	}
++        	validateLegalCharacters(newString);
++        	withoutWhitespace.add(newString);
++        	
++        }
+         return withoutWhitespace;
+     }
+ 
+@@ -177,6 +189,12 @@ class Chunk {
+             throw new PictureException("Picture width mismatched");
+         }
+     }
++    
++    private static void validateLegalCharacters(final String str) throws PictureException {
++    	if(!str.matches("[.A-Z]+")){
++    		throw new PictureException("Line contains invalid characters after removing spaces");
++    	}
++    }
+ 
+ 
+     //////////////////////////////////
+diff --git a/src/pic/Constants.java b/src/pic/Constants.java
+index e5b357d..e471685 100644
+--- a/src/pic/Constants.java
++++ b/src/pic/Constants.java
+@@ -25,7 +25,7 @@ class Constants {
+     // PATTERN MATCHING
+     //////////////////////////////////
+ 
+-    static final Pattern DIMENSION_PATTERN = Pattern.compile("\\d");
++    static final Pattern DIMENSION_PATTERN = Pattern.compile("\\d+");
+ 
+ 
+     //////////////////////////////////
+diff --git a/src/pic/PictureInput.java b/src/pic/PictureInput.java
+index 45a6c4d..89bfd83 100644
+--- a/src/pic/PictureInput.java
++++ b/src/pic/PictureInput.java
+@@ -73,7 +73,6 @@ class PictureInput {
+ 
+         assert height > 0 : "Valid height entry";
+         assert width > 0: "Valid width entry";
+-
+         List<String> remainder = inputStrings.subList(2, inputStrings.size());
+ 
+         List<Chunk> chunkList = Chunk.byEmptyLine(remainder);
+@@ -115,7 +114,7 @@ class PictureInput {
+ 
+         Chunk finalChunk = chunkList.get(chunkList.size() - 1);
+ 
+-        return factory.of(finalChunk, height, width);
++        return (CompositePicture) factory.of(finalChunk, height, width);
+     }
+ 
+     private static List<SubPicture> extractInputPictures(final List<Chunk> chunkList,
+@@ -130,7 +129,7 @@ class PictureInput {
+         List<Chunk> inputChunks = chunkList.subList(0, chunkList.size() - 1);
+ 
+         for(Chunk chunk : inputChunks){
+-            SubPicture subPicture = factory.of(chunk, height, width);
++            SubPicture subPicture = (SubPicture) factory.of(chunk, height, width);
+             inputPictures.add(subPicture);
+         }
+ 
+@@ -186,9 +185,14 @@ class PictureInput {
+         for(SubPicture subPicture : inputPictures) {
+             currentCharacters.add(subPicture.get(row, col));
+         }
++        
++        if(currentCharacters.size() > 1){
++        	//If there is any potential for a pixel to not be null, it cant be null
++        	currentCharacters.remove(null);
++        }
+ 
+         Character compositeCharacter = compositePicture.get(row, col);
+-
++        
+         if(!currentCharacters.contains(compositeCharacter)){
+             throw new PictureException("Out of place character");
+         }
+diff --git a/src/pic/PictureOrdering.java b/src/pic/PictureOrdering.java
+index 49b6174..2e29936 100644
+--- a/src/pic/PictureOrdering.java
++++ b/src/pic/PictureOrdering.java
+@@ -25,10 +25,11 @@ class PictureOrdering {
+     // FIELDS
+     //////////////////////////////////
+ 
+-    private final Set<Character> removed;
++    private final List<Character> removed;
+     private final List<SubPicture> toRemove;
+     private final PictureInput input;
+     private final CompositePicture composite;
++    private final int originalNumberOfInputPictures;
+ 
+ 
+     //////////////////////////////////
+@@ -38,8 +39,9 @@ class PictureOrdering {
+     private PictureOrdering(final PictureInput input) {
+         this.input = input;
+         this.toRemove = input.getInputPictures();
+-        this.removed = new HashSet<>();
++        this.removed = new ArrayList<>();
+         this.composite = input.getCompositePicture();
++        this.originalNumberOfInputPictures = input.numberOfInputPictures();
+     }
+ 
+     static PictureOrdering from(final PictureInput input){
+@@ -69,7 +71,13 @@ class PictureOrdering {
+ 
+         while(!isSuccess()){
+             nextPictureToRemove = nextPictureToRemove();
+-            nextPictureToRemove.ifPresent(this::remove);
++            if(nextPictureToRemove.isPresent()){
++            	nextPictureToRemove.ifPresent(this::remove);
++            }
++            else{
++            	break;
++            }
++            
+         }
+     }
+ 
+@@ -84,7 +92,11 @@ class PictureOrdering {
+                 .stream()
+                 .filter(removalCandidate -> !composite.isSubPictureObstructed(removalCandidate, removed))
+                 .collect(Collectors.toList());
+-
++        if(removalCandidates.size() != 1){
++        	//There are either no candidates or multiple candidates! 
++        	//Either way, something is wrong and we can't figure out the solution
++        	return Optional.empty();    	
++        }        
+         return Optional.of(removalCandidates.get(0));
+     }
+ 
+@@ -93,11 +105,11 @@ class PictureOrdering {
+      * @return true if success, false otherwise
+      */
+     private boolean isSuccess() {
+-        return removed.size() == input.numberOfInputPictures();
++        return removed.size() == originalNumberOfInputPictures;
+     }
+ 
+     private void remove(final SubPicture subPicture){
+-        removed.add(subPicture.getOverallCharacter());
++        removed.add(0,subPicture.getOverallCharacter());
+         toRemove.remove(subPicture);
+     }
+ 
+diff --git a/src/pic/SubPicture.java b/src/pic/SubPicture.java
+index 1e7b52f..05414bc 100644
+--- a/src/pic/SubPicture.java
++++ b/src/pic/SubPicture.java
+@@ -1,5 +1,8 @@
+ package pic;
+ 
++import java.util.Arrays;
++import java.util.HashSet;
++
+ /**
+  * AbstractPicture subtype representing the input pictures in a pictures problem.
+  *
+@@ -45,6 +48,13 @@ class SubPicture extends AbstractPicture {
+             throw new PictureException("Uninitialized SubPicture");
+         }
+     }
++    
++    private void validateOnlyLetter() throws PictureException {
++        HashSet<Character> validCharacters = new HashSet<Character>(Arrays.asList(overallCharacter));
++    	if(!containsExactly(validCharacters)){
++            throw new PictureException("Multiple Letters!");
++        }
++    }
+ 
+ 
+     //////////////////////////////////
+@@ -53,9 +63,10 @@ class SubPicture extends AbstractPicture {
+ 
+     void validate() throws PictureException{
+         validateNonnullCharacter();
++        validateOnlyLetter();
+     }
+ 
+-    static class PictureFactory extends AbstractPicture.PictureFactory{
++	static class PictureFactory extends AbstractPicture.PictureFactory{
+         SubPicture make(final CharacterImage image){
+             return new SubPicture(image);
+         }
+diff --git a/test/pic/PicTest.java b/test/pic/PicTest.java
+new file mode 100644
+index 0000000..42ddb8c
+--- /dev/null
++++ b/test/pic/PicTest.java
+@@ -0,0 +1,184 @@
++package pic;
++
++import static org.junit.Assert.*;
++
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.HashSet;
++import java.util.List;
++
++import org.junit.Test;
++
++public class PicTest {
++	
++	@Test
++	public void ChunkEnterCharacterArrayIndexOutOfBoundsTest() throws PictureException{
++		ArrayList<String> lines = new ArrayList<String>();
++		lines.add(". . . E . . .");
++		lines.add(". . E . . . .");
++		lines.add(". . . . E . .");
++		lines.add(". . . E . . .");
++		Chunk testChunk = Chunk.StaticTestHook.of(lines);
++		try{
++			Character[][] charArray = testChunk.toCharacterArray(4, 7);
++		}
++		catch(ArrayIndexOutOfBoundsException e){
++			System.out.println(e.getMessage());
++			fail();
++		}
++	}
++	
++	@Test
++	public void AbstractPictureIsUnexpectedCharacterTest(){
++		HashSet<Character> characters = new HashSet<Character>(Arrays.asList('a', 'b', 'c'));
++		char c = 'c';
++		assertFalse(AbstractPicture.StaticTestHook.isUnexpectedCharacter(c, characters));
++	}
++	
++	@Test
++	public void PictureOrderingToRemoveNumInputPicturesTest() throws PictureException{
++		PictureReader reader = new PictureReader();
++		//requires input to be valid input
++        List<String> inputLines = reader.inputLines("inputs/PictureOrderingOrderStringInput.txt"); 
++		PictureInput input = PictureInput.inputOf(inputLines);
++		try{
++			PictureOrdering order = PictureOrdering.from(input);
++		}
++		catch(ArrayIndexOutOfBoundsException e){
++			System.out.println(e.getMessage());
++			fail();
++		}
++	}
++	
++	@Test
++	public void PictureOrderingNoSubPicturesToRemoveTest() throws PictureException{
++		PictureReader reader = new PictureReader();
++		//requires input composite picture in which you can't tell the order of subpictures due to covering each other
++        List<String> inputLines = reader.inputLines("inputs/ImpossibleCompositePicture.txt"); 
++        PictureInput input = PictureInput.inputOf(inputLines);
++		PictureOrdering order = PictureOrdering.from(input);
++		assertFalse(System.out.equals("error"));
++	}
++	
++	@Test
++	public void PictureOrderingMoreThanOneSubPicturesToRemoveTest() throws PictureException{
++		PictureReader reader = new PictureReader();
++		//requires input to have a composite picture in which you can't tell the order of subpictures because there is more than one possible
++        List<String> inputLines = reader.inputLines("inputs/ImpossibleCompositePicture2.txt"); 
++        PictureInput input = PictureInput.inputOf(inputLines);
++		PictureOrdering order = PictureOrdering.from(input);
++		assertFalse(System.out.equals("error"));
++	}
++	
++	@Test
++	public void PictureOrderingOrderStringNotOrderedTest() throws PictureException{
++		PictureReader reader = new PictureReader();
++		//requires input to be a valid input with characters ABCDE where the correct oder isnt ABCDE
++        List<String> inputLines = reader.inputLines("inputs/PictureOrderingOrderStringInput.txt"); 
++		PictureInput input = PictureInput.inputOf(inputLines);
++		PictureOrdering order = PictureOrdering.from(input);
++		assertFalse(order.toString().equals("ABCDE"));
++	}
++	
++	@Test
++	public void PictureOrderingBackwardsOrderTest() throws PictureException{
++		PictureReader reader = new PictureReader();
++		//requires input to be a valid input where the correct order is EDABC
++        List<String> inputLines = reader.inputLines("inputs/PictureOrderingOrderStringInput.txt"); 
++		PictureInput input = PictureInput.inputOf(inputLines);
++		PictureOrdering order = PictureOrdering.from(input);
++		assertTrue(order.toString().equals("EDABC"));
++	}
++	
++	@Test
++	public void PictureInputDimensionMatcherTest() throws PictureException{
++		try{
++			PictureInput.StaticTestHook.validateDimensionFormat("10", "Invalid height input");
++		}
++		catch(PictureException e){
++			System.out.println(e.getMessage());
++			fail();
++		}
++	}
++	
++	@Test
++	public void ChunkNoWhitespaceTest() throws PictureException{
++		ArrayList<String> lines = new ArrayList<String>();
++		lines.add(". . . E             . . .");
++		lines.add(". . E .  .  .  		.");
++		lines.add(". . . . E . .");
++		lines.add(". . .E...");
++		Chunk testChunk = Chunk.StaticTestHook.of(lines);
++		try{
++			Character[][] charArray = testChunk.toCharacterArray(4, 7);
++			fail();
++		}
++		catch(PictureException e){
++			//should throw an error because there are incorrect whitespaces
++		}
++	}
++	
++	@Test
++	public void ChunkNoCharactersTest() throws PictureException{
++		ArrayList<String> lines = new ArrayList<String>();
++		lines.add(". . . . . . .");
++		lines.add(". . . . . . .");
++		lines.add(". . . . . . .");
++		lines.add(". . . . . . .");
++		Chunk testChunk = Chunk.StaticTestHook.of(lines);
++		try{
++			Character[][] charArray = testChunk.toCharacterArray(4, 7);
++		}
++		catch(PictureException e){
++			//should throw an error because there are no valid characters
++			fail();
++		}
++	}
++	
++	@Test
++	public void ChunkMultipleCharactersTest() throws PictureException{
++		ArrayList<String> lines = new ArrayList<String>();
++		lines.add(". . . E . . .");
++		lines.add("A . E . . D .");
++		lines.add(". . . . E . .");
++		lines.add(". C . E . . .");
++		Chunk testChunk = Chunk.StaticTestHook.of(lines);
++		try{
++			Character[][] charArray = testChunk.toCharacterArray(4, 7);
++		}
++		catch(PictureException e){
++			//should throw an error because there are multiple valid characters
++			fail();
++		}
++	}
++	
++	@Test
++	public void PictureInputMissingLettersTest() throws PictureException{
++		PictureReader reader = new PictureReader();
++		//requires input to be an invalid input with missing letters in the composite picture
++        List<String> inputLines = reader.inputLines("inputs/InvalidCompositePicturePlacement.txt"); 
++		try{
++			PictureInput input = PictureInput.inputOf(inputLines);
++			fail();
++		}
++		catch(PictureException e){
++			//should throw an error because the composite picture is invalid
++			
++		}
++	}
++	
++	@Test
++	public void PictureInputCompletelyOverlappingCompositeTest() throws PictureException{
++		PictureReader reader = new PictureReader();
++		//requires input to be an invalid input a subpicture completely overlapped in the composite picture
++        List<String> inputLines = reader.inputLines("inputs/CompletelyOverlappingComposite.txt"); 
++		try{
++			PictureInput input = PictureInput.inputOf(inputLines);
++			fail();
++		}
++		catch(PictureException e){
++			//should throw an error because the composite picture is invalid
++			
++		}
++	}
++}
