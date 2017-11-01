@@ -6,7 +6,7 @@ import java.util.Iterator;
 
 public class EstimatedDuration {
 	
-	public class Test{
+	public static class Test{
 		
 		public boolean isFinished(HashSet<Assignment> blocked, HashSet<Assignment> started){
 			EstimatedDuration.blocked = blocked;
