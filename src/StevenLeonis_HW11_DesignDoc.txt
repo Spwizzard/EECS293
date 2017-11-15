@@ -1,0 +1,150 @@
+Steven Leonis
+EECS293: Software Craftsmanship
+HW11 Design Document
+11/14/17
+
+Format:
+<Class>{
+	<Constructors>
+
+	<Public / Package Private Methods>
+		<Pseudocode>
+
+	<Private Data Structures>
+}
+
+
+This series of assignments involves the creation of a wireframe.
+Thus, the "starting point" class in my design is Wireframe. 
+Note: just because it is the starting point doesn't mean everything else extends it. In fact, nothing else extends it
+Methods in this class can be thought of as "buttons" that one could press in a wireframe GUI in order to perform the necessary tasks
+
+final class Wireframe{
+	Wireframe()
+
+	void placeElement(ElementType type, Location location)
+	void removeElement(AbstractElement element)
+	AbstractElement getElementAtLocation(Location location)
+
+	ArrayList<Groupable> wireframeElements //The ordered list of all wireframe elements (and groups!) in this wireframe
+} 
+
+Before we get into the elements of the wireframe, we need a way to specify a location on the Wireframe.
+The Location class is essentially a wrapper for a Point (an x,y position, in our case on the screen)
+class Location{
+	Location(Point point) 		//A Point can be gotten using MouseInfo.getPointerInfo().getLocation();
+	Location(int x, int y)		//In order to manually create a location
+
+	int getX()
+	int getY()
+
+	final int x
+	final int y
+}
+
+Now, we need elements that we can put in the Wireframe. We will use an abstract class "AbstractElement" to represent anything we can put on the Wireframe. 
+The purpose of this class is so that both "Annotation" and "AbstractWireframeElement" can inherit the same movement/resizing code. However, because an Annotation doesn't share any other similar features with the other wireframe elements, we split them up.
+
+abstract class AbstractElement{
+	AbstractElement(Location location)
+
+	void moveTo(Location location)
+	void resizeTo(int pixelWidth, int pixelHeight)
+	Location getCurrentLocation()
+	int getPixelWidth()
+	int getPixelHeight()
+	
+	Location topLeftLocation 	//location of the top-left corner of the element
+	int pixelWidth 				
+	int pixelHeight				
+}
+
+
+We have another abstract class that represents all of the wireframe elements (except annotations!), in order to allow them to share functionality such as locking, adding annotations, and grouping
+
+abstract class AbstractWireframeElement extends AbstractElement implements Groupable{
+	AbstractWireframeElement(Location location)
+
+	void lock()
+	void unlock()
+	void addAnnotation(Annotation annotation)
+	void removeAnnotation(Annotation annotation)
+	void displayAnnotations()
+	void hideAnnotations()
+	void alignAnnotations(Alignment alignment)
+	void setParentGroupTo(Group group)
+	boolean isLocked()
+	Optional<Group> getParentGroup()
+
+	boolean locked
+	ArrayList<Annotation> annotations
+	Optional<Group> parentGroup
+}
+
+An Alignment is simply an Enum representing the 4 possible alignments: LEFT, RIGHT, CENTER, and JUSTIFIED
+
+The other class that inherits from AbstractElement is Annotation. An annotation is linked to a wireframe element, but can be moved, resized, and shown/hidden independently (although the linked element has the ability to control this as well.)
+
+class Annotation extends AbstractElement{
+	Annotation(AbstractWireframeElement linkedElement, Location location)
+
+	void display()
+	void hide()
+	void setText(String text)
+	void alignText(Alignment alignment)
+	String getText()
+	AbstractWireframeElement getLinkedElement()
+	Alignment getAlignment()
+
+	AbstractWireframeElement linkedElement
+	String text 
+	Alignment alignment
+}
+
+
+<Group>
+
+Finally, we can talk about the types of wireframe elements that can be created. These will all extend AbstractWireframeElement. Most of their functionality was already covered by AbstractWireframeElement, so most of these have little implementation needed.
+
+class Image extends AbstractWireframeElement{
+	Image(Location location)
+}
+
+class RoundedBox extends AbstractWireframeElement{
+	RoundedBox(Location location)
+}
+
+class Text extends AbstractWireframeElement{
+	Text(Location location)
+
+	String getText()
+	
+	final String text = "Lorem ipsum dolor sit...."
+}
+
+Paragraph, Header, and List are all blocked out when drawn by the wireframe GUI. So, they do not need any special implementation compared to Text
+
+class Paragraph extends AbstractWireframeElement{
+	Paragraph(Location location)
+}
+
+class Header extends AbstractWireframeElement{
+	Header(Location location)
+}
+
+class List extends AbstractWireframeElement{
+	Header(Location location)
+}
+
+class ComboBox extends AbstractWireframeElement{
+	ComboBox(Location location)
+
+	void addOption(String option)
+	void removeOption(String option)
+	ArrayList<String> getOptions()
+
+	ArrayList<String> options
+}
+
+
+
