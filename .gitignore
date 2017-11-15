@@ -3,4 +3,4 @@
 .settings/
 build/
 report/
-bin/
+bin/*
