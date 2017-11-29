@@ -23,65 +23,45 @@ final class Wireframe{
 	Wireframe()
 
 	void placeElement(ElementType type, Location location){
+		if type = ANNOTATION, stop
 		create new element of type type at location
 		add it to start of wireframeElements list
 	}
 	void deleteElement(AbstractElement element){
 		Given element (found using getElementAtPoint probably)
+		if element is an annotation, go to its linkedElement to delete it
+
 		if element is locked, stop
-		if element has a parentGroup
-			group.removeMember(element)
+			if element has a parentGroup
+				group.removeMember(element)
+		remove any annotations from the element
 		remove element from wireframeElements
 	}
 	void bringElementToFront(Groupable element) {
-		find index of element in wireframeElements, move it to index = 0
+		remove element from wireframeElements, place it at start of list
 	}
 	void bringElementForward(Groupable element){
-		find index of element in wireframeElements, move it to index = index - 1
+		find index of element in wireframeElements,
+		if index > 0, set element to index - 1, set replaced element to index
 	}
 	void sendElementToBack(Groupable element){
-		find index of element in wireframeElements, move it to index = size
+		emove element from wireframeElements, place it at end of list
 	}
 	void sendElementBackward(Groupable element){
-		find index of element in wireframeElements, move it to index = index + 1
+		if index < wireframeElements.size(), set element to index + 1, set replaced element to index
 	}
 	void groupElements(List<Groupable> elements){
 		create new Group(elements)
-		add it to start of wireframeElements list
+		remove all elements from wireframeElements
+		add group to start of wireframeElements
 	}
-	void ungroupElementsInGroup(Group group)
-	AbstractElement getElementAtPointer(){
-		location <- Location() // (from mouse pointer)
-		return getElementAtLocation(location)
+	void ungroupElementsInGroup(Group group){
+		get group members from group
+		add group members back to wireframeElements
+		group.deleteGroup()
+		remove group from wireframeElements
 	}
-	Optional<AbstractElement> getElementAtLocation(Location location){
-		//Because elements are stored in wireframeElements list from front to back, with annotations drawn implicitly on top, we can check all elements to see which one we are hovering over
-		//Obviously, private helpers will be used
-
-		x <- location.getX()
-		y <- location.getY()
-
-		for each groupable in wireframeElements:
-			if it is a Group:
-				recursively repeat on group members
-			if it is an abstractWireframeElement:
-				for each annotation of the element:
-					if 	x is between annotation.getLocation().getX() and annotation.getLocation().getX() + getPixelWidth() and
-						y is between annotation.getLocation().getY() and annotation.getLocation().getY() + getPixelHeight()
-						then we are hovering over the annotation! return optional with element
-
-		//If we reach here, we didn't hit an annotation
-		for each groupable in wireframeElements:
-			if it is a Group:
-				recursively repeat on group members
-			if it is an abstractWireframeElement:
-				if 	x is between element.getLocation().getX() and element.getLocation().getX() + getPixelWidth() and
-					y is between element.getLocation().getY() and element.getLocation().getY() + getPixelHeight()
-					then we are hovering over the element! return optional with element
-
-		else return null
-	}
-
+	
 	ArrayList<Groupable> wireframeElements //The ordered list of all wireframe elements (and groups!) in this wireframe
 } 
 
@@ -105,6 +85,7 @@ abstract class AbstractElement{
 	AbstractElement(Location location)
 
 	void moveTo(Location location)
+	void moveUsingOffset(int xOffset, int yOffset)
 	void resizeTo(int pixelWidth, int pixelHeight)
 	Location getCurrentLocation()
 	int getPixelWidth()
@@ -132,12 +113,21 @@ abstract class AbstractWireframeElement extends AbstractElement implements Group
 			parentGroup.moveGroupTo(xOffset, yOffset)
 
 		else move to new location
-
-		always update annotations to new location using offset		
+			update annotations to new location using offset		
 	}
+
+	void moveUsingOffset(int xOffset, int yOffset){
+		if locked, stop
+
+		xLocation <- location.getX() + xOffset
+		yLocation <- location.getY() + yOffset
+		moveAnnotations(xOffset, yOffset)
+		super.moveTo(new Location(xLocation, yLocation))
+	}
+	void resizeTo(int pixelWidth, int pixelHeight)
 	void lock()
 	void unlock()
-	void addAnnotation(Annotation annotation)
+	void createAnnotation() //creates a new blank annotation at element's location
 	void removeAnnotation(Annotation annotation)
 	void displayAnnotations()
 	void hideAnnotations()
@@ -161,28 +151,56 @@ class Annotation extends AbstractElement{
 	void display()
 	void hide()
 	void setText(String text)
-	void alignText(Alignment alignment)
+	void setAlignment(Alignment alignment)
 	String getText()
+	void setLinkedElement()
 	AbstractWireframeElement getLinkedElement()
 	Alignment getAlignment()
 
+	boolean hidden
 	AbstractWireframeElement linkedElement
 	String text 
 	Alignment alignment
 }
 
-The way in which elements will be groupe together is by using a "Group" class to link them all together. The elements that can be grouped together are those that implement the "Groupable" interface, which does nothing except ensure that its members have a parentGroup.
+The Groupable Interface is used to specify that both Groups and AbstractWireframeElements are able to be locked and be in groups.
+
+interface Groupable{
+	public void lock();
+	public void unlock();
+	public boolean isLocked();
+	public void setParentGroup(Group parentGroup) throws LockedException
+	public Optional<Group> getParentGroup();
+}
+
+The way in which elements will be groupe together is by using a "Group" class to link them all together. The elements that can be grouped together are those that implement the "Groupable" interface
 Groups have an order, determined by the order of the ArrayList. Groups need to move together, such that when one member moves, the other members also move identically
 
 class Group implements Groupable{
-	Group(Groupable member)
 	Group(List<Groupable> groupMembers)
 
-	void addGroupMember(Groupable member)
-	void removeGroupMember(Groupable members)
+	void addGroupMembers(List<Groupable> groupMembers){
+		check if group is locked
+		check if group members are locked
+		for each member in groupMembers,
+			set member.ParentGroup to this
+			add this member to this.groupMembers
+	}
+	void removeGroupMembers(List<Groupable> groupMembers){
+		check if group is locked
+		check if group members are locked
+		for each member in groupMembers,
+			set member.ParentGroup to null
+			remove this member from this.groupMembers
+	}
 	void moveGroup(int xOffset, int yOffset){
+		check if group is locked
+		check if group members are locked
 		for each member of group
-			get current location, add x and y offset, tell it to move to new location using offsets
+			if it is a group, do group.moveGroup(xOffset, yOffset)
+
+			if not,
+			move member using moveUsingOffset(xOffset, yOffset)
 	}
 	void deleteGroup(){
 		if not locked
@@ -192,10 +210,19 @@ class Group implements Groupable{
 	}
 	void lock()
 	void unlock()
-	void bringMemberToFront(Groupable member)
-	void bringMemberForward(Groupable member)
-	void sendMemberToBack(Groupable member)
-	void sendMemberBackward(Groupable member)
+	void bringElementToFront(Groupable element) {
+		remove element from groupMembers, place it at start of list
+	}
+	void bringElementForward(Groupable element){
+		find index of element in groupMembers,
+		if index > 0, set element to index - 1, set replaced element to index
+	}
+	void sendElementToBack(Groupable element){
+		emove element from groupMembers, place it at end of list
+	}
+	void sendElementBackward(Groupable element){
+		if index < groupMembers.size(), set element to index + 1, set replaced element to index
+	}
 	void setParentGroup(Group group)
 	boolean isLocked()
 	Optional<Group> getParentGroup()
@@ -327,4 +354,9 @@ class WireframeException extends Exception{
 	WireframeException(String message)
 }
 
+A LockedException is used to tell the GUI (or whatever is using Wireframe package) that a modification was attempted on a locked object
+
+class LockedException extends WireframeException{
+	LockedException(String message)
+}
 
