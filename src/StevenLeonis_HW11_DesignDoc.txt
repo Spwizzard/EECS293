@@ -22,9 +22,65 @@ Methods in this class can be thought of as "buttons" that one could press in a w
 final class Wireframe{
 	Wireframe()
 
-	void placeElement(ElementType type, Location location)
-	void removeElement(AbstractElement element)
-	AbstractElement getElementAtLocation(Location location)
+	void placeElement(ElementType type, Location location){
+		create new element of type type at location
+		add it to start of wireframeElements list
+	}
+	void deleteElement(AbstractElement element){
+		Given element (found using getElementAtPoint probably)
+		if element is locked, stop
+		if element has a parentGroup
+			group.removeMember(element)
+		remove element from wireframeElements
+	}
+	void bringElementToFront(Groupable element) {
+		find index of element in wireframeElements, move it to index = 0
+	}
+	void bringElementForward(Groupable element){
+		find index of element in wireframeElements, move it to index = index - 1
+	}
+	void sendElementToBack(Groupable element){
+		find index of element in wireframeElements, move it to index = size
+	}
+	void sendElementBackward(Groupable element){
+		find index of element in wireframeElements, move it to index = index + 1
+	}
+	void groupElements(List<Groupable> elements){
+		create new Group(elements)
+		add it to start of wireframeElements list
+	}
+	void ungroupElementsInGroup(Group group)
+	AbstractElement getElementAtPointer(){
+		location <- Location() // (from mouse pointer)
+		return getElementAtLocation(location)
+	}
+	Optional<AbstractElement> getElementAtLocation(Location location){
+		//Because elements are stored in wireframeElements list from front to back, with annotations drawn implicitly on top, we can check all elements to see which one we are hovering over
+		//Obviously, private helpers will be used
+
+		x <- location.getX()
+		y <- location.getY()
+
+		for each groupable in wireframeElements:
+			if it is a Group:
+				recursively repeat on group members
+			if it is an abstractWireframeElement:
+				for each annotation of the element:
+					if 	x is between annotation.getLocation().getX() and annotation.getLocation().getX() + getPixelWidth() and
+						y is between annotation.getLocation().getY() and annotation.getLocation().getY() + getPixelHeight()
+						then we are hovering over the annotation! return optional with element
+
+		//If we reach here, we didn't hit an annotation
+		for each groupable in wireframeElements:
+			if it is a Group:
+				recursively repeat on group members
+			if it is an abstractWireframeElement:
+				if 	x is between element.getLocation().getX() and element.getLocation().getX() + getPixelWidth() and
+					y is between element.getLocation().getY() and element.getLocation().getY() + getPixelHeight()
+					then we are hovering over the element! return optional with element
+
+		else return null
+	}
 
 	ArrayList<Groupable> wireframeElements //The ordered list of all wireframe elements (and groups!) in this wireframe
 } 
@@ -43,7 +99,7 @@ class Location{
 }
 
 Now, we need elements that we can put in the Wireframe. We will use an abstract class "AbstractElement" to represent anything we can put on the Wireframe. 
-The purpose of this class is so that both "Annotation" and "AbstractWireframeElement" can inherit the same movement/resizing code. However, because an Annotation doesn't share any other similar features with the other wireframe elements, we split them up.
+The purpose of this class is so that both "Annotation" and "AbstractWireframeElement" can inherit the same creation/movement/resizing code. However, because an Annotation doesn't share any other similar features with the other wireframe elements, we split them up.
 
 abstract class AbstractElement{
 	AbstractElement(Location location)
@@ -53,10 +109,12 @@ abstract class AbstractElement{
 	Location getCurrentLocation()
 	int getPixelWidth()
 	int getPixelHeight()
+	ElementType getType()
 	
 	Location topLeftLocation 	//location of the top-left corner of the element
 	int pixelWidth 				
-	int pixelHeight				
+	int pixelHeight	
+	ElementType type			
 }
 
 
@@ -65,6 +123,18 @@ We have another abstract class that represents all of the wireframe elements (ex
 abstract class AbstractWireframeElement extends AbstractElement implements Groupable{
 	AbstractWireframeElement(Location location)
 
+	void moveTo(){ //Extended
+		if locked, stop
+
+		find the x difference between current location and new location
+		find the y difference between current location and new location
+		if part of a group, 
+			parentGroup.moveGroupTo(xOffset, yOffset)
+
+		else move to new location
+
+		always update annotations to new location using offset		
+	}
 	void lock()
 	void unlock()
 	void addAnnotation(Annotation annotation)
@@ -72,7 +142,7 @@ abstract class AbstractWireframeElement extends AbstractElement implements Group
 	void displayAnnotations()
 	void hideAnnotations()
 	void alignAnnotations(Alignment alignment)
-	void setParentGroupTo(Group group)
+	void setParentGroup(Group group)
 	boolean isLocked()
 	Optional<Group> getParentGroup()
 
@@ -81,7 +151,7 @@ abstract class AbstractWireframeElement extends AbstractElement implements Group
 	Optional<Group> parentGroup
 }
 
-An Alignment is simply an Enum representing the 4 possible alignments: LEFT, RIGHT, CENTER, and JUSTIFIED
+An Alignment is simply an Enum representing the 4 possible alignments: LEFT, RIGHT, CENTER, and JUSTIFIED. This is found in the Enums class
 
 The other class that inherits from AbstractElement is Annotation. An annotation is linked to a wireframe element, but can be moved, resized, and shown/hidden independently (although the linked element has the ability to control this as well.)
 
@@ -101,13 +171,50 @@ class Annotation extends AbstractElement{
 	Alignment alignment
 }
 
+The way in which elements will be groupe together is by using a "Group" class to link them all together. The elements that can be grouped together are those that implement the "Groupable" interface, which does nothing except ensure that its members have a parentGroup.
+Groups have an order, determined by the order of the ArrayList. Groups need to move together, such that when one member moves, the other members also move identically
 
-<Group>
+class Group implements Groupable{
+	Group(Groupable member)
+	Group(List<Groupable> groupMembers)
+
+	void addGroupMember(Groupable member)
+	void removeGroupMember(Groupable members)
+	void moveGroup(int xOffset, int yOffset){
+		for each member of group
+			get current location, add x and y offset, tell it to move to new location using offsets
+	}
+	void deleteGroup(){
+		if not locked
+		setParentGroup of all members to Optional.empty
+		clear groupMembers
+		set own parentGroup to Optional.empty
+	}
+	void lock()
+	void unlock()
+	void bringMemberToFront(Groupable member)
+	void bringMemberForward(Groupable member)
+	void sendMemberToBack(Groupable member)
+	void sendMemberBackward(Groupable member)
+	void setParentGroup(Group group)
+	boolean isLocked()
+	Optional<Group> getParentGroup()
+	ArrayList<Groupable> getGroupMembers()
+
+	boolean locked
+	ArrayList<Groupable> groupMembers
+	Optional<Group> parentGroup
+}
 
 Finally, we can talk about the types of wireframe elements that can be created. These will all extend AbstractWireframeElement. Most of their functionality was already covered by AbstractWireframeElement, so most of these have little implementation needed.
 
 class Image extends AbstractWireframeElement{
-	Image(Location location)
+	ImageElement(Location location)
+
+	void setImage(BufferedImage image)
+	BufferedImage getImage()
+
+	BufferedImage image;
 }
 
 class RoundedBox extends AbstractWireframeElement{
@@ -117,23 +224,41 @@ class RoundedBox extends AbstractWireframeElement{
 class Text extends AbstractWireframeElement{
 	Text(Location location)
 
+	void alignText(Alignment alignment)
 	String getText()
-	
+	Alignment getAlignment()
+
 	final String text = "Lorem ipsum dolor sit...."
+	Alignment alignment
 }
 
-Paragraph, Header, and List are all blocked out when drawn by the wireframe GUI. So, they do not need any special implementation compared to Text
+Paragraph, Header, and List are all blocked out when drawn by the wireframe GUI. So, they do not need any special text implementation compared to Text
 
 class Paragraph extends AbstractWireframeElement{
 	Paragraph(Location location)
+
+	void alignText(Alignment alignment)
+	Alignment getAlignment()
+
+	Alignment alignment
 }
 
 class Header extends AbstractWireframeElement{
 	Header(Location location)
+
+	void alignText(Alignment alignment)
+	Alignment getAlignment()
+
+	Alignment alignment
 }
 
 class List extends AbstractWireframeElement{
 	Header(Location location)
+
+	void alignText(Alignment alignment)
+	Alignment getAlignment()
+
+	Alignment alignment
 }
 
 class ComboBox extends AbstractWireframeElement{
@@ -146,5 +271,60 @@ class ComboBox extends AbstractWireframeElement{
 	ArrayList<String> options
 }
 
+class ProgressBar extends AbstractWireframeElement{
+	ProgressBar(Location location)
+
+	void setProgress(int progress)
+	int getProgress()
+
+	int progress 		//0 to 100
+}
+
+class ScrollBar extends AbstractWireframeElement{
+	ScrollBar(Location location)
+
+	void setProgress(int progress)
+	int getProgress()
+
+	int progress 		//0 to 100
+}
+
+class Slider extends AbstractWireframeElement{
+	Slider(Location location)
+
+	void setProgress(int progress)
+	int getProgress()
+
+	int progress 		//0 to 100
+}
+
+An Enums class holds the enums used by the classes: Alignment and ElementType
+
+public class Enums{
+	Alignment:
+		LEFT,
+		RIGHT,
+		CENTER,
+		JUSTIFIED
+
+	ElementType:
+		ANNOTATION,
+		IMAGE,
+		ROUNDED_BOX,
+		TEXT,
+		PARAGRAPH,
+		HEADER,
+		LIST,
+		COMBO_BOX,
+		PROGRESS_BAR,
+		SCROLL_BAR,
+		SLIDER
+}
+
+A package-standard WireframeException exception class will be used to consistently throw errors if one arises
+class WireframeException extends Exception{
+	WireframeException(String message, Throwable e)
+	WireframeException(String message)
+}
 
 
