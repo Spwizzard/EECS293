@@ -1,10 +1,17 @@
 package wireframe;
 
+/**
+ *A RoundedBox element is just a box with rounded edges in a wireframe. It does nothing else.
+ *
+ */
 public class RoundedBox extends AbstractWireframeElement {
 
-	public RoundedBox(Location location) {
+	/**Creates a RoundedBox at the specified location. 
+	 * @param location the location at which to place the RoundedBox
+	 */
+	RoundedBox(Location location) {
 		super(location);
-		this.type = Enums.ElementType.ROUNDED_BOX;
+		setType(Enums.ElementType.ROUNDED_BOX);
 	}
 
 }

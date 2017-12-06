@@ -12,44 +12,38 @@ public class WireframeTest {
 	public void wireframeStressTest(){
 		Wireframe wireframe = new Wireframe();
 		//Create lots of objects
+		ArrayList<Groupable> elementList = new ArrayList<Groupable>();
+		Enums.ElementType[] values = Enums.ElementType.values();
+		for(int i = 0; i < 1000; i++){
+			Enums.ElementType type = values[(int)(Math.random() * values.length)];
+			Location location = new Location((int)(Math.random() * 1000),(int)(Math.random() * 1000));
+			wireframe.placeElement(type, location);
+			if(type != Enums.ElementType.ANNOTATION){
+				elementList.add(wireframe.getWireframeElements().get(0));
+			}
+		}
+		AbstractElement lastElement = (AbstractElement)elementList.get(0);
 		try{
-			Enums.ElementType[] values = Enums.ElementType.values();
-			for(int i = 0; i < 1000; i++){
-				Enums.ElementType type = values[(int)(Math.random() * values.length)];
-				Location location = new Location((int)(Math.random() * 1000),(int)(Math.random() * 1000));
-				wireframe.placeElement(type, location);
-			}
-			AbstractElement firstElement = (AbstractElement)wireframe.getWireframeElements().get(0);
-			wireframe.groupElements(wireframe.getWireframeElements());//group all elements together
+			wireframe.groupElements(elementList);//group all elements together
 			Groupable group = wireframe.getWireframeElements().get(0); //this should be the group
-			assertEquals(group.getClass(), Group.class);
+			assertEquals(1, wireframe.getWireframeElements().size());
 			Location newLocation = new Location((int)(Math.random() * 1000),(int)(Math.random() * 1000));
-			firstElement.moveTo(newLocation);
+			lastElement.moveTo(newLocation);
 			group.lock();
-			try{
-				newLocation = new Location((int)(Math.random() * 1000),(int)(Math.random() * 1000));
-				firstElement.moveTo(newLocation);
-				fail();//The group is locked, it shouldn't work
-			}
-			catch(LockedException e){
-				//The group is locked
-			}	
+			newLocation = new Location((int)(Math.random() * 1000),(int)(Math.random() * 1000));
+			lastElement.moveTo(newLocation);
+			fail();//The group is locked, it shouldn't work
 		}
-		catch(WireframeException e){
-			fail();
-		}
+		catch(LockedException e){
+			//The group is locked
+		}	
 	}
 	
 	@Test
 	public void createElementTest(){
 		Wireframe wireframe = new Wireframe();
-		try{
-			wireframe.placeElement(Enums.ElementType.IMAGE, new Location(5,5));
-			assertEquals(1 , wireframe.getWireframeElements().size());
-		}
-		catch(WireframeException e){
-			fail();
-		}
+		wireframe.placeElement(Enums.ElementType.IMAGE, new Location(5,5));
+		assertEquals(1 , wireframe.getWireframeElements().size());
 	}
 	
 	@Test
@@ -77,7 +71,7 @@ public class WireframeTest {
 			fail();
 		}
 		catch(WireframeException e){
-			assertEquals("Groupable is locked!" , e.getMessage());
+			assertEquals("Element is locked!" , e.getMessage());
 		}
 	}
 	
@@ -169,7 +163,7 @@ public class WireframeTest {
 			
 		}
 		catch(WireframeException e){
-			assertEquals("Groupable is locked!" , e.getMessage());
+			assertEquals("Element is locked!" , e.getMessage());
 		}
 	}
 	
@@ -323,8 +317,8 @@ public class WireframeTest {
 		try{
 			wireframe.placeElement(Enums.ElementType.IMAGE, new Location(5,5));
 			wireframe.placeElement(Enums.ElementType.TEXT, new Location(7,5));
-			AbstractWireframeElement image = (AbstractWireframeElement) wireframe.getWireframeElements().get(0);
-			AbstractWireframeElement text = (AbstractWireframeElement) wireframe.getWireframeElements().get(1);
+			AbstractWireframeElement image = (AbstractWireframeElement) wireframe.getWireframeElements().get(1);
+			AbstractWireframeElement text = (AbstractWireframeElement) wireframe.getWireframeElements().get(0);
 			assertEquals(2 , wireframe.getWireframeElements().size());
 			ArrayList<Groupable> groupMembers = new ArrayList<Groupable>();
 			groupMembers.add(image);
@@ -631,9 +625,9 @@ public class WireframeTest {
 			wireframe.placeElement(Enums.ElementType.IMAGE, new Location(5,5));
 			wireframe.placeElement(Enums.ElementType.TEXT, new Location(7,5));
 			wireframe.placeElement(Enums.ElementType.HEADER, new Location(1,5));
-			AbstractWireframeElement image = (AbstractWireframeElement) wireframe.getWireframeElements().get(0);
+			AbstractWireframeElement image = (AbstractWireframeElement) wireframe.getWireframeElements().get(2);
 			AbstractWireframeElement text = (AbstractWireframeElement) wireframe.getWireframeElements().get(1);
-			AbstractWireframeElement header = (AbstractWireframeElement) wireframe.getWireframeElements().get(2);
+			AbstractWireframeElement header = (AbstractWireframeElement) wireframe.getWireframeElements().get(0);
 			assertEquals(3 , wireframe.getWireframeElements().size());
 			ArrayList<Groupable> subgroupList = new ArrayList<Groupable>();
 			subgroupList.add(image);
@@ -668,7 +662,7 @@ public class WireframeTest {
 			subgroupList.add(image);
 			subgroupList.add(text);
 			wireframe.groupElements(subgroupList);
-			Group subgroup = (Group)wireframe.getWireframeElements().get(1);
+			Group subgroup = (Group)wireframe.getWireframeElements().get(0);
 			ArrayList<Groupable> groupList = new ArrayList<Groupable>();
 			groupList.add(header);
 			groupList.add(subgroup);
@@ -681,6 +675,28 @@ public class WireframeTest {
 		}
 		catch(WireframeException e){
 			fail();
+		}	
+	}
+	
+	@Test
+	public void groupMemberLockedTest(){
+		Wireframe wireframe = new Wireframe();
+		try{
+			wireframe.placeElement(Enums.ElementType.IMAGE, new Location(5,5));
+			wireframe.placeElement(Enums.ElementType.TEXT, new Location(7,5));
+			AbstractWireframeElement image = (AbstractWireframeElement) wireframe.getWireframeElements().get(0);
+			AbstractWireframeElement text = (AbstractWireframeElement) wireframe.getWireframeElements().get(1);
+			ArrayList<Groupable> groupList = new ArrayList<Groupable>();
+			groupList.add(image);
+			groupList.add(text);
+			wireframe.groupElements(groupList);
+			Group group = (Group)wireframe.getWireframeElements().get(0);
+			image.lock();
+			text.moveTo(new Location(5,5));
+			fail(); //image is locked and they are grouped, so we shouldn't be able to move text
+		}
+		catch(WireframeException e){
+			assertEquals("One of the group members is locked!", e.getMessage());
 		}	
 	}
 }
